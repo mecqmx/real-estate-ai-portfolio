@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant User
+    participant Frontend (src/app/auth/signin/page.js)
+    participant Backend (API route /api/auth/signin)
+    participant NextAuth
+    participant Database
+
+    User->>Frontend: Enters email and password
+    Frontend->>Backend: Sends login request (POST /api/auth/signin)
+    Backend->>NextAuth: Calls signIn('credentials', ...)
+    NextAuth->>Database: Verifies user credentials
+    Database-->>NextAuth: Returns user data
+    alt Valid Credentials
+        NextAuth->>Backend: Returns authentication token
+        Backend->>Frontend: Sets session cookie
+        Frontend->>User: Redirects to /properties
+    else Invalid Credentials
+        NextAuth->>Backend: Returns authentication error
+        Backend->>Frontend: Displays error message
+    end
+    alt Unverified User
+     NextAuth->>Backend: Returns "unverified email" error
+     Backend->>Frontend: Displays "verify email" message
+     Frontend->>Backend: Requests resending of verification email (POST /api/auth/send-verification-email)
+     Backend->>Database: Updates resend date
+     Backend->>User: Sends verification email
+    end
