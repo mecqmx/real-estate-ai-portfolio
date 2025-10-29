@@ -29,6 +29,7 @@ export default function CreatePropertyPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false); // New state for AI generation
 
   // Handle input changes for main form fields
   const handleInputChange = (e) => {
@@ -64,6 +65,59 @@ export default function CreatePropertyPage() {
       ...prevData,
       images: newImages,
     }));
+  };
+
+  const handleGenerateDescription = async () => {
+    setIsGeneratingDescription(true);
+    setError(null); // Clear previous errors
+
+    try {
+      const payload = {
+        title: formData.title,
+        price: formData.price ? parseFloat(formData.price) : null,
+        beds: formData.bedrooms ? parseInt(formData.bedrooms, 10) : null,
+        baths: formData.bathrooms ? parseInt(formData.bathrooms, 10) : null,
+        area: formData.constructionArea ? parseFloat(formData.constructionArea) : (formData.landArea ? parseFloat(formData.landArea) : null),
+        features: [],
+        locale: navigator.language || 'en-US', // Use browser locale
+      };
+
+      if (formData.furnished) {
+        payload.features.push('furnished');
+      }
+      // Add other features based on property type, location, etc. if desired
+      if (formData.type && formData.type !== 'all') {
+        payload.features.push(formData.type);
+      }
+      if (formData.operation && formData.operation !== 'all') {
+        payload.features.push(formData.operation);
+      }
+      if (formData.location) {
+        payload.features.push(formData.location);
+      }
+
+      const response = await fetch('/api/generate-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setFormData((prevData) => ({
+        ...prevData,
+        description: data.description,
+      }));
+    } catch (err) {
+      console.error('Error generating description:', err);
+      setError(err.message || 'Failed to generate description. Please fill in more details or try again.');
+    } finally {
+      setIsGeneratingDescription(false);
+    }
   };
 
   // Handle form submission
@@ -264,6 +318,14 @@ export default function CreatePropertyPage() {
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
             required
           ></textarea>
+          <button
+            type="button"
+            onClick={handleGenerateDescription}
+            disabled={isGeneratingDescription}
+            className="mt-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isGeneratingDescription ? 'Generating...' : 'Generate Description with AI'}
+          </button>
         </div>
 
         <div className="flex items-center">
