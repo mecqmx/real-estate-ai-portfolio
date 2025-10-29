@@ -86,8 +86,8 @@ export async function POST(req) {
     if (!body || !body.title) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
 
     const cacheKey = JSON.stringify(body);
-    // const cached = lib.getCache(cacheKey);
-    // if (cached) return NextResponse.json({ description: cached, cached: true });
+    const cached = lib.getCache(cacheKey);
+    if (cached) return NextResponse.json({ description: cached, cached: true });
 
     // Forcing English as requested, removing language detection.
     const inferredLocale = 'en-US';
@@ -97,7 +97,7 @@ export async function POST(req) {
     if (!GEMINI_KEY) {
       console.warn('LLM API key not found. Using fallback description.');
       const desc = lib.fallbackDescription({ ...body, locale: inferredLocale });
-      // lib.setCache(cacheKey, desc);
+      lib.setCache(cacheKey, desc);
       return NextResponse.json({ description: desc, fallback: true });
     }
 
@@ -114,7 +114,7 @@ Features: ${(body.features || []).join(', ')}
 Description:`;
 
     const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const result = await model.generateContent(prompt);
     const response = result.response;
@@ -129,11 +129,11 @@ Description:`;
 
     if (!description) {
       const desc = lib.fallbackDescription({ ...body, locale: inferredLocale });
-      // lib.setCache(cacheKey, desc);
+      lib.setCache(cacheKey, desc);
       return NextResponse.json({ description: desc, fallback: true });
     }
 
-    // lib.setCache(cacheKey, description);
+    lib.setCache(cacheKey, description);
     return NextResponse.json({ description, remaining: rl.remaining });
   } catch (err) {
     console.error(err);
