@@ -17,10 +17,10 @@ export default function EditPropertyPage() {
     price: '',
     location: '',
     image: '', // Main image URL (matches frontend field name)
-    type: 'Casa',
+    type: 'House',
     bedrooms: '',
     bathrooms: '',
-    operation: 'Venta',
+    operation: 'Sale',
     description: '',
     furnished: false,
     constructionArea: '',
@@ -69,11 +69,11 @@ export default function EditPropertyPage() {
           title: data.title || '',
           price: data.price || '',
           location: data.location || '',
-          image: data.image || '', // Use 'image' from API
-          type: data.type || 'Casa',
+          image: data.image || '',
+          type: data.type || 'House',
           bedrooms: data.bedrooms || '',
           bathrooms: data.bathrooms || '',
-          operation: data.operation || 'Venta',
+          operation: data.operation || 'Sale',
           description: data.description || '',
           furnished: data.furnished || false,
           constructionArea: data.constructionArea || '',
@@ -314,11 +314,11 @@ export default function EditPropertyPage() {
             onChange={handleInputChange}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="Casa">House</option>
-            <option value="Apartamento">Apartment</option>
-            <option value="Terreno">Land</option>
-            <option value="Oficina">Office</option>
-            <option value="Local Comercial">Commercial Space</option>
+            <option value="House">House</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Land">Land</option>
+            <option value="Office">Office</option>
+            <option value="Comercial Space">Commercial Space</option>
           </select>
         </div>
 
@@ -356,8 +356,8 @@ export default function EditPropertyPage() {
             onChange={handleInputChange}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="Venta">Sale</option>
-            <option value="Renta">Rent</option>
+            <option value="Sale">Sale</option>
+            <option value="Rent">Rent</option>
           </select>
         </div>
 

@@ -1,11 +1,11 @@
 // admin-cli.js
-// Este script CLI permite la gestión de usuarios (crear ADMIN, cambiar rol, eliminar)
-// directamente desde la línea de comandos. Es una herramienta de "super administrador"
-// para situaciones de emergencia o configuración inicial en producción.
+// This CLI script allows user management (create ADMIN, change role, delete)
+// directly from the command line. It's a "super admin" tool for emergency
+// situations or initial setup in production.
 
 const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs'); // Para hashear contraseñas
-const readline = require('readline'); // Para entrada de usuario en la consola
+const bcrypt = require('bcryptjs'); // For hashing passwords
+const readline = require('readline'); // For user input in the console
 
 const prisma = new PrismaClient();
 
@@ -14,7 +14,7 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-// Función para preguntar al usuario en la consola
+// Function to ask the user a question in the console
 function askQuestion(query) {
   return new Promise(resolve => rl.question(query, resolve));
 }
@@ -51,8 +51,8 @@ async function main() {
       console.error("Prisma Error Code:", error.code);
     }
   } finally {
-    rl.close(); // Cerrar la interfaz de lectura
-    await prisma.$disconnect(); // Desconectar Prisma Client
+    rl.close(); // Close the readline interface
+    await prisma.$disconnect(); // Disconnect Prisma Client
   }
 }
 
@@ -106,17 +106,17 @@ async function changeUserRole() {
     return;
   }
 
-  // Prevención de auto-democión: El script no permite cambiar el rol del usuario logueado
-  // Esto es una capa adicional, la API ya lo previene para el admin logueado.
-  // Aquí es más para evitar que un admin se democione accidentalmente si este script
-  // fuera ejecutado por un admin que no está logueado en la app web.
-  // En este contexto CLI, no tenemos una "sesión" de usuario logueado.
+  // Self-demotion prevention: This script doesn't allow changing the role of the logged-in user.
+  // This is an additional layer; the API already prevents this for the logged-in admin.
+  // Here, it's more to prevent an admin from accidentally demoting themselves if this script
+  // were run by an admin who is not logged into the web app.
+  // In this CLI context, we don't have a logged-in user "session".
 
   const updatedUser = await prisma.user.update({
     where: { id: user.id },
     data: {
       role: newRole.toUpperCase(),
-      updatedAt: new Date(), // Asegurar que updatedAt se actualice
+      updatedAt: new Date(), // Ensure updatedAt is updated
     },
   });
   console.log(`\nUser "${updatedUser.email}" role changed to "${updatedUser.role}" successfully!`);
@@ -139,9 +139,9 @@ async function deleteUser() {
     return;
   }
 
-  // Consideraciones para eliminar un usuario:
-  // Si el usuario tiene propiedades asociadas y no tienes onDelete: Cascade configurado en Prisma para propiedades,
-  // la eliminación fallará. Para NextAuth, las relaciones Account y Session suelen tener onDelete: Cascade.
+  // Considerations for deleting a user:
+  // If the user has associated properties and you don't have onDelete: Cascade configured in Prisma for properties,
+  // the deletion will fail. For NextAuth, the Account and Session relations usually have onDelete: Cascade.
 
   await prisma.user.delete({ where: { id: user.id } });
   console.log(`\nUser "${user.email}" deleted successfully.`);

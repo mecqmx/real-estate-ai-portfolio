@@ -148,17 +148,16 @@ URL: http://localhost:3000/api/properties
 Body: raw JSON (Example for reference):
 
 JSON
-
 {
-  "title": "Residencia Colonial en Paseo Montejo",
+  "title": "Colonial Residence on Paseo Montejo",
   "price": 500000,
-  "location": "Paseo Montejo, Mérida",
+  "location": "Paseo Montejo, Merida",
   "image": "https://images.example.com/property_colonial.jpg",
-  "type": "Casa",
+  "type": "House",
   "bedrooms": 5,
   "bathrooms": 4,
-  "operation": "Venta",
-  "description": "Una joya arquitectónica con historia y todas las comodidades modernas en la avenida más emblemática de Mérida.",
+  "operation": "Sale",
+  "description": "An architectural gem with history and all modern amenities on Merida's most emblematic avenue.",
   "furnished": true,
   "constructionArea": "450 m²",
   "landArea": "600 m²",
@@ -259,8 +258,8 @@ JSON
 {
   "title": "UPDATED Colonial Residence on Paseo Montejo",
   "price": 550000,
-  "location": "Paseo Montejo, Mérida",
-  "description": "An architectural gem with history and all modern amenities on Mérida's most emblematic avenue. Now with new photos!",
+  "location": "Paseo Montejo, Merida",
+  "description": "An architectural gem with history and all modern amenities on Merida's most emblematic avenue. Now with new photos!",
   "furnished": true,
   "images": [
     { "url": "https://res.cloudinary.com/your-cloud-name/image/upload/v1/image1.jpg" },

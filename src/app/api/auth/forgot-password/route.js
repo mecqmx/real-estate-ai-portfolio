@@ -1,21 +1,21 @@
 // src/app/api/auth/forgot-password/route.js
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto'; // Para generar tokens seguros
-import nodemailer from 'nodemailer'; // Para enviar correos electrónicos (simulado por ahora)
+import crypto from 'crypto'; // To generate secure tokens
+import nodemailer from 'nodemailer'; // To send emails (simulated for now)
 
 const prisma = new PrismaClient();
 
-// Configuración del transportador de correo (PLACEHOLDER - DEBES CONFIGURAR ESTO PARA PRODUCCIÓN)
-// Para desarrollo, puedes usar Ethereal Mail (https://ethereal.email/) o Mailtrap.io
-// O simplemente loguear el email en la consola.
+// Mail transporter configuration (PLACEHOLDER - YOU MUST CONFIGURE THIS FOR PRODUCTION)
+// For development, you can use Ethereal Mail (https://ethereal.email/) or Mailtrap.io
+// Or just log the email to the console.
 const transporter = nodemailer.createTransport({
-  host: "smtp.ethereal.email", // Ejemplo de host (para desarrollo)
+  host: "smtp.ethereal.email", // Example host (for development)
   port: 587,
   secure: false, // true for 465, false for other ports
   auth: {
-    user: "user@ethereal.email", // Reemplaza con tu usuario de Ethereal/Mailtrap
-    pass: "your_password", // Reemplaza con tu contraseña de Ethereal/Mailtrap
+    user: "user@ethereal.email", // Replace with your Ethereal/Mailtrap user
+    pass: "your_password", // Replace with your Ethereal/Mailtrap password
   },
 });
 
@@ -31,22 +31,22 @@ export async function POST(request) {
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      // Por seguridad, no revelamos si el correo electrónico existe o no.
-      // Siempre respondemos con un mensaje genérico de éxito.
+      // For security, we don't reveal if the email exists or not.
+      // We always respond with a generic success message.
       console.log(`Password reset requested for non-existent or unverified email: ${email}`);
       return NextResponse.json({ message: 'If an account with that email exists, a password reset link has been sent.' }, { status: 200 });
     }
 
-    // Generar un token seguro
+    // Generate a secure token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const tokenExpires = new Date(Date.now() + 3600000); // Token válido por 1 hora
+    const tokenExpires = new Date(Date.now() + 3600000); // Token valid for 1 hour
 
-    // Eliminar tokens antiguos para este usuario para evitar spam de tokens
+    // Delete old tokens for this user to avoid token spam
     await prisma.passwordResetToken.deleteMany({
       where: { email: user.email },
     });
 
-    // Guardar el nuevo token en la base de datos
+    // Save the new token to the database
     await prisma.passwordResetToken.create({
       data: {
         token: resetToken,
@@ -55,7 +55,7 @@ export async function POST(request) {
       },
     });
 
-    // --- Enviar el correo electrónico (SIMULADO POR AHORA) ---
+    // --- Send the email (SIMULATED FOR NOW) ---
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}`;
 
     const mailOptions = {
@@ -74,7 +74,7 @@ export async function POST(request) {
       `,
     };
 
-    // Descomenta las siguientes líneas para enviar correos en desarrollo/producción
+    // Uncomment the following lines to send emails in development/production
     // await transporter.sendMail(mailOptions);
     console.log(`Password reset email simulated for ${user.email}. Link: ${resetUrl}`);
 

@@ -14,10 +14,10 @@ export default function CreatePropertyPage() {
     price: '',
     location: '',
     image: '', // Main image URL
-    type: 'Casa', // Default type
+    type: 'House', // Default type
     bedrooms: '',
     bathrooms: '',
-    operation: 'Venta', // Default operation
+    operation: 'Sale', // Default operation
     description: '',
     furnished: false,
     constructionArea: '',
@@ -161,10 +161,10 @@ export default function CreatePropertyPage() {
         price: '',
         location: '',
         image: '',
-        type: 'Casa',
+        type: 'House',
         bedrooms: '',
         bathrooms: '',
-        operation: 'Venta',
+        operation: 'Sale',
         description: '',
         furnished: false,
         constructionArea: '',
@@ -257,11 +257,11 @@ export default function CreatePropertyPage() {
             onChange={handleInputChange}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="Casa">House</option>
-            <option value="Apartamento">Apartment</option>
-            <option value="Terreno">Land</option>
-            <option value="Oficina">Office</option>
-            <option value="Local Comercial">Commercial Space</option>
+            <option value="House">House</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Land">Land</option>
+            <option value="Office">Office</option>
+            <option value="Commercial">Commercial Space</option>
             {/* Add more types as needed */}
           </select>
         </div>
@@ -300,8 +300,8 @@ export default function CreatePropertyPage() {
             onChange={handleInputChange}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="Venta">Sale</option>
-            <option value="Renta">Rent</option>
+            <option value="Sale">Sale</option>
+            <option value="Rent">Rent</option>
           </select>
         </div>
 
@@ -340,7 +340,7 @@ export default function CreatePropertyPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="constructionArea" className="block text-sm font-medium text-gray-700">Construction Area (e.g., "200 m²"):</label>
+            <label htmlFor="constructionArea" className="block text-sm font-medium text-gray-700">Construction Area (sqm):</label>
             <input
               type="text"
               id="constructionArea"
@@ -351,7 +351,7 @@ export default function CreatePropertyPage() {
             />
           </div>
           <div>
-            <label htmlFor="landArea" className="block text-sm font-medium text-gray-700">Land Area (e.g., "300 m²"):</label>
+            <label htmlFor="landArea" className="block text-sm font-medium text-gray-700">Land Area (sqm):</label>
             <input
               type="text"
               id="landArea"
