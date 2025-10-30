@@ -102,19 +102,31 @@ export async function POST(req) {
     }
 
     // Simplified prompt to generate a description directly.
-    const prompt = `Generate a short, engaging real estate description in English for the following property.
-Return only the description text, with no extra formatting, labels, or JSON.
+    const prompt = `You are a professional real estate copywriter. Your task is to generate an engaging property description in English based on the data provided below.
+
+Follow these rules:
+1. If the 'Operation' is "Rent", emphasize the benefits of renting.
+2. If the 'Operation' is "Sale", emphasize the value of buying.
+3. If a 'Location' is provided, naturally weave in its benefits and use a communication style that feels local and culturally aware.
+4. Mention the 'Type' of property naturally within the description.
+5. Keep the description concise but engaging.
+6. End with a clear call to action, inviting the reader to book an inspection.
+7. VERY IMPORTANT: Generate only the description text. Do not include any extra formatting, labels, titles, or JSON.
+
 ---
-Property Data:
+PROPERTY DATA:
 Title: ${body.title}
+Operation: ${body.operation || 'Sale'}
+Location: ${body.location}
+Type: ${body.type}
 Price: ${formattedPrice}
-Details: ${body.beds} beds, ${body.baths} baths, ${body.area} sqm.
-Features: ${(body.features || []).join(', ')}
+Details: ${body.beds || 'N/A'} beds, ${body.baths || 'N/A'} baths, ${body.area || 'N/A'} sqm.
+Features: ${(body.features || []).join(', ') || 'None'}
 ---
-Description:`;
+DESCRIPTION:`;
 
     const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const result = await model.generateContent(prompt);
     const response = result.response;

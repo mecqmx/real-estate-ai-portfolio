@@ -31,6 +31,7 @@ export default function EditPropertyPage() {
   const [isLoading, setIsLoading] = useState(true); // Initial loading state for fetching data
   const [isSubmitting, setIsSubmitting] = useState(false); // Loading state for form submission
   const [error, setError] = useState(null);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [success, setSuccess] = useState(false);
 
   // Redirect if not authenticated or not authorized role
@@ -100,6 +101,50 @@ export default function EditPropertyPage() {
       ...prevData,
       [name]: type === 'checkbox' ? checked : value,
     }));
+  };
+
+  const handleGenerateDescription = async () => {
+    setIsGeneratingDescription(true);
+    setError(null); // Clear previous errors
+
+    try {
+      const payload = {
+        title: formData.title,
+        price: formData.price ? parseFloat(formData.price) : null,
+        beds: formData.bedrooms ? parseInt(formData.bedrooms, 10) : null,
+        baths: formData.bathrooms ? parseInt(formData.bathrooms, 10) : null,
+        area: formData.constructionArea ? parseFloat(formData.constructionArea) : (formData.landArea ? parseFloat(formData.landArea) : null),
+        operation: formData.operation, // Pass the operation type
+        features: [],
+        locale: navigator.language || 'en-US',
+      };
+
+      if (formData.furnished) payload.features.push('furnished');
+      if (formData.type && formData.type !== 'all') payload.features.push(formData.type);
+      if (formData.location) payload.features.push(formData.location);
+
+      const response = await fetch('/api/generate-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setFormData((prevData) => ({
+        ...prevData,
+        description: data.description,
+      }));
+    } catch (err) {
+      console.error('Error generating description:', err);
+      setError('AI failed to generate a description. Please ensure the title and other key details are filled out, or try again.');
+    } finally {
+      setIsGeneratingDescription(false);
+    }
   };
 
   const handleImageChange = (index, e) => {
@@ -327,6 +372,14 @@ export default function EditPropertyPage() {
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
             required
           ></textarea>
+          <button
+            type="button"
+            onClick={handleGenerateDescription}
+            disabled={isGeneratingDescription}
+            className="mt-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isGeneratingDescription ? 'Generating...' : 'Generate Description with AI'}
+          </button>
         </div>
 
         <div className="flex items-center">
@@ -399,17 +452,17 @@ export default function EditPropertyPage() {
         </div>
 
         {/* Submission Feedback */}
-        {isLoading && <p className="text-blue-600">Creating property...</p>}
+        {isSubmitting && <p className="text-blue-600">Updating property...</p>}
         {error && <p className="text-red-600">Error: {error}</p>}
-        {success && <p className="text-green-600">Property created successfully!</p>}
+        {success && <p className="text-green-600">Property updated successfully!</p>}
 
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isSubmitting || isLoading}
           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Creating...' : 'Create Property'}
+          {isSubmitting ? 'Updating...' : 'Update Property'}
         </button>
       </form>
     </main>

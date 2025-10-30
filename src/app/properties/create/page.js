@@ -77,7 +77,8 @@ export default function CreatePropertyPage() {
         price: formData.price ? parseFloat(formData.price) : null,
         beds: formData.bedrooms ? parseInt(formData.bedrooms, 10) : null,
         baths: formData.bathrooms ? parseInt(formData.bathrooms, 10) : null,
-        area: formData.constructionArea ? parseFloat(formData.constructionArea) : (formData.landArea ? parseFloat(formData.landArea) : null),
+        area: formData.constructionArea ? parseFloat(formData.constructionArea) : null,
+        operation: formData.operation, // Send operation type directly
         features: [],
         locale: navigator.language || 'en-US', // Use browser locale
       };
@@ -88,9 +89,6 @@ export default function CreatePropertyPage() {
       // Add other features based on property type, location, etc. if desired
       if (formData.type && formData.type !== 'all') {
         payload.features.push(formData.type);
-      }
-      if (formData.operation && formData.operation !== 'all') {
-        payload.features.push(formData.operation);
       }
       if (formData.location) {
         payload.features.push(formData.location);
@@ -114,7 +112,7 @@ export default function CreatePropertyPage() {
       }));
     } catch (err) {
       console.error('Error generating description:', err);
-      setError(err.message || 'Failed to generate description. Please fill in more details or try again.');
+      setError('AI failed to generate a description. Please ensure the title and other key details are filled out, or try again.');
     } finally {
       setIsGeneratingDescription(false);
     }
