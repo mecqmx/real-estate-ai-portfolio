@@ -28,6 +28,16 @@ function isValidImageUrl(url) {
 
 // Handler for GET requests to /api/properties (Fetch all properties with filters)
 export async function GET(request) {
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
+
+  // Base where clause for filtering
+  const whereClause = {};
+
+  // If the user is an AGENT, add a condition to only fetch their own properties.
+  if (user && user.role === 'AGENT') {
+    whereClause.ownerId = user.id;
+  }
   try {
     const { searchParams } = new URL(request.url);
     const minPrice = searchParams.get('minPrice');
@@ -37,8 +47,6 @@ export async function GET(request) {
     const bathrooms = searchParams.get('bathrooms');
     const operation = searchParams.get('operation'); // NEW: Operation filter
     const furnished = searchParams.get('furnished'); // NEW: Furnished filter
-
-    const whereClause = {};
 
     if (minPrice) {
       whereClause.price = { gte: parseFloat(minPrice) };
@@ -82,11 +90,15 @@ export async function GET(request) {
 // Handler for POST requests to /api/properties (Create a new property)
 export async function POST(request) {
   const session = await getServerSession(authOptions);
-
-  if (!session || (session.user?.role !== 'AGENT' && session.user?.role !== 'ADMIN')) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  
+  // Security check: Only AGENT or ADMIN can create properties
+  if (!session || !session.user || (session.user.role !== 'AGENT' && session.user.role !== 'ADMIN')) {
+    return NextResponse.json({ message: 'Forbidden: You do not have permission to create a property.' }, { status: 403 });
   }
 
+  // The user is authenticated and has the correct role, get their ID for ownership
+  const userId = session.user.id;
+  
   try {
     const body = await request.json();
     const {
@@ -145,7 +157,7 @@ export async function POST(request) {
         images: { // Nested write for PropertyImage model
           create: galleryImagesToCreate,
         },
-        ownerId: session.user.id, // Assign the property to the logged-in user
+        ownerId: userId, // Assign ownership to the logged-in user
       },
       include: {
         images: true, // Include related gallery images in the response

@@ -54,11 +54,26 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || (session.user?.role !== 'AGENT' && session.user?.role !== 'ADMIN')) {
+  // Security check: User must be authenticated
+  if (!session || !session.user) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Role check: User must be an AGENT or ADMIN
+  if (session.user.role !== 'AGENT' && session.user.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Unauthorized: You do not have permission to update a property.' }, { status: 403 });
   }
 
   const { id } = await params;
+
+  // Ownership check: If the user is an AGENT, they must own the property
+  if (session.user.role === 'AGENT') {
+    const property = await prisma.property.findUnique({ where: { id } });
+    if (!property || property.ownerId !== session.user.id) {
+      return NextResponse.json({ message: 'Forbidden: You do not own this property.' }, { status: 403 });
+    }
+  }
+
   const body = await request.json();
   const { images, ...propertyData } = body;
 
@@ -118,11 +133,25 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || (session.user?.role !== 'AGENT' && session.user?.role !== 'ADMIN')) {
+  // Security check: User must be authenticated
+  if (!session || !session.user) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Role check: User must be an AGENT or ADMIN
+  if (session.user.role !== 'AGENT' && session.user.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Unauthorized: You do not have permission to delete a property.' }, { status: 403 });
   }
 
   const { id } = await params;
+
+  // Ownership check: If the user is an AGENT, they must own the property
+  if (session.user.role === 'AGENT') {
+    const property = await prisma.property.findUnique({ where: { id } });
+    if (!property || property.ownerId !== session.user.id) {
+      return NextResponse.json({ message: 'Forbidden: You do not own this property.' }, { status: 403 });
+    }
+  }
 
   try {
     const deletedProperty = await prisma.property.delete({
