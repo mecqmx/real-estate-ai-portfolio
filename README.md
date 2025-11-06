@@ -101,21 +101,38 @@ Make sure you have the following installed:
     ```
 
 4.  **Create an environment file (`.env.local`):**
-    In the root of your project, create a file named `.env.local`. This is where you'll store sensitive API keys. For now, if you don't have OpenAI keys, you can leave it empty or add a placeholder.
-    Copy the contents of `.env.example` (if it exists) and fill in your own values.
+    In the root of your project, create a file named `.env.local` to store your sensitive API keys and database connection string. Copy the contents of `.env.example` (if it exists) and fill in your own values.
 
     ```
     # .env.local
-    # OPENAI_API_KEY=your_openai_api_key_here
-    # GEMINI_API_KEY=your_gemini_api_key_here
     DATABASE_URL="your_database_connection_string"
-    NEXT_PUBLIC_API_KEY_THIRD_PARTY_LLM="your_llm_api_key_here"
     NEXT_PUBLIC_GEMINI_API_KEY="your_gemini_api_key_here"
     ```
     *(Ensure this file is not committed to Git. Next.js's `.gitignore` usually excludes it by default.)*
     *(This file is excluded from Git by default in `.gitignore`.)*
 
 ### **Run the Development Server**
+
+---
+
+## 🧠 AI Prompt Engineering
+
+The core of the "Property Description Assistant" lies in the quality of the prompt sent to the Gemini API. The current implementation (`src/app/api/generate-description/route.js`) uses a carefully structured prompt to ensure high-quality, consistent, and relevant outputs.
+
+### Prompt Strategy
+
+The prompt is designed with the following principles:
+
+1.  **Role-Playing:** The prompt instructs the AI to act as a `professional real estate copywriter`, setting the context and desired tone.
+2.  **Clear Rules:** A numbered list of rules guides the AI's output, covering key aspects like:
+    *   Tailoring the message based on the operation type (`Rent` vs. `Sale`).
+    *   Incorporating location details for a local feel.
+    *   Ensuring a concise and engaging tone.
+    *   Ending with a specific call to action.
+3.  **Structured Data Input:** Property data is passed in a clean, easy-to-parse format, clearly separating it from the instructions. This includes dynamic data like `Title`, `Location`, `Price`, and `Features`.
+4.  **Output Formatting Constraint:** The prompt explicitly tells the AI to generate *only* the description text, preventing it from adding extra titles, labels, or markdown formatting.
+
+This structured approach makes the AI's behavior more predictable and the output more reliable for direct use in the application's frontend.
 
 ---
 
@@ -142,25 +159,44 @@ Now that the core AI-powered Property Description Assistant is integrated and re
 ## 📂 Project Folder Structure
 
 The main folder structure of the project is as follows:
-
 real-estate-ai-portfolio/
-├── public/                 # Static assets (images, favicon, etc.)
-├── src/
-│   ├── app/                # Application routes (App Router)
-│   │   ├── properties/     # Property catalog pages
-│   │   │   └── page.js     # Main catalog page (e.g., for property listings)
-│   │   └── layout.js       # Main application layout
-│   ├── components/         # Reusable React components
-│   │   └── PropertyCard.jsx
-│   ├── data/               # Local project data (e.g., properties.js)
-│   │   └── properties.js
-│   ├── styles/             # Global styles (Tailwind CSS)
-│   └── globals.css
-├── .env.local              # Local environment variables
+├── .env.local              # Local environment variables (untracked)
+├── .gitignore              # Git ignore file
+├── docs/                   # Project documentation files
 ├── next.config.mjs         # Next.js configuration
 ├── package.json            # Project dependencies and scripts
-├── tailwind.config.js      # Tailwind CSS configuration
-└── README.md               # This file
+├── public/                 # Static assets (images, favicon, etc.)
+├── prisma/                 # Prisma schema and migrations
+│   └── schema.prisma
+├── README.md               # This file
+├── src/
+│   ├── app/                # Next.js App Router
+│   │   ├── api/            # API routes
+│   │   │   ├── auth/
+│   │   │   │   └── [...nextauth]/ # NextAuth.js dynamic route handler
+│   │   │   │       └── route.js
+│   │   │   ├── admin/
+│   │   │   │   └── users/
+│   │   │   │       ├── [id]/
+│   │   │   │       │   └── route.js # Handles user updates and deletion
+│   │   │   │       └── route.js     # Handles fetching all users
+│   │   │   ├── properties/
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── route.js  # Handles GET (single), PUT, DELETE
+│   │   │   │   └── route.js      # Handles GET (all), POST
+│   │   │   ├── register/
+│   │   │   │   └── route.js      # Handles new user registration
+│   │   │   └── generate-description/
+│   │   │       └── route.js  # AI description generator
+│   │   ├── auth/                 # Authentication-related pages
+│   │   │   ├── signin/page.js
+│   │   │   └── signup/page.js
+│   │   ├── properties/     # Frontend pages for properties
+│   │   └── layout.js       # Main application layout
+│   ├── components/         # Reusable React components
+│   ├── styles/             # Global styles (Tailwind CSS)
+│   └── globals.css
+└── tailwind.config.js      # Tailwind CSS configuration
 ---
 
 ## 🤝 Contributions and Contact

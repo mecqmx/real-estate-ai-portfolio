@@ -3,15 +3,15 @@
 **I. Essential Documentation (Complete ASAP)**
 
 *   [ ] **README.md (Project Root):**
-    *   [ ] Project Title
-    *   [ ] Brief Description of your portfolio and its purpose
+    *   [Ok] Project Title
+    *   [Ok] Brief Description of portfolio and its purpose
     *   [ ] Live Demo Link (if deployed)
-    *   [ ] Technologies Used (Next.js, React, Tailwind CSS, etc.)
-    *   [ ] Setup Instructions (how to run the project locally)
-    *   [ ] Key Features
+    *   [Ok] Technologies Used (Next.js, React, Tailwind CSS, etc.)
+    *   [Ok] Setup Instructions (how to run the project locally)
+    *   [Ok] Key Features
     *   [ ] Project Structure (brief overview of important directories)
-    *   [ ] License Information (e.g., MIT License)
-    *   [ ] Contact Information (your email or portfolio link)
+    *   [Ok] License Information (e.g., MIT License)
+    *   [Ok] Contact Information (your email or portfolio link)
 *   [ ] **Authentication Flow Diagram (docs/authentication-flow.mmd):**
     *   [ ] Ensure the diagram is up-to-date and accurately reflects the authentication process.
     *   [ ] Add a brief explanation of the diagram in the `README.md` or a separate documentation file.
@@ -25,7 +25,7 @@
 *   [ ] **API Route Documentation:**
     *   [ ] Document your Next.js API routes (e.g., `/api/auth/signin`). Explain the purpose of each route, the expected request body, and the response format.
 *   [ ] **Code Comments:**
-    *   [ ] Add clear and concise comments to your code, especially in complex or critical sections.  Focus on explaining *why* the code is doing something, not just *what* it's doing.
+    *   [ ] Add clear and concise comments to code, especially in complex or critical sections.  Focus on explaining *why* the code is doing something, not just *what* it's doing.
 
 **III. Nice-to-Have Documentation (Complete Later)**
 
