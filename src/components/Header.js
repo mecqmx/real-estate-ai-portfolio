@@ -30,6 +30,12 @@ export default function Header() {
             Create Property
           </Link>
         )}
+        {/* Inspection Management Link, visible for AGENT or ADMIN */}
+        {status === 'authenticated' && (hasRole('AGENT') || hasRole('ADMIN')) && (
+          <Link href="/admin/inspections" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
+            Manage Inspections
+          </Link>
+        )}
         {/* Admin Panel Link, visible only for ADMIN */}
         {status === 'authenticated' && hasRole('ADMIN') && (
           <Link href="/admin/users" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">

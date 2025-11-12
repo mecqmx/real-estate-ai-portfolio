@@ -6,6 +6,53 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export async function GET(request) {
+  const session = await getServerSession(authOptions);
+
+  // 1. Check if user is authenticated and is an AGENT or ADMIN
+  if (!session || !['AGENT', 'ADMIN'].includes(session.user?.role)) {
+    return NextResponse.json(
+      { message: 'You are not authorized to view inspection requests.' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    let inspectionRequests;
+
+    // 2. Fetch requests based on user role
+    if (session.user.role === 'ADMIN') {
+      // Admins can see all requests
+      inspectionRequests = await prisma.inspectionRequest.findMany({
+        include: {
+          property: { select: { title: true } }, // Include property title
+          client: { select: { name: true, email: true } }, // Include client info
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    } else {
+      // Agents see requests for properties they are assigned to
+      inspectionRequests = await prisma.inspectionRequest.findMany({
+        where: {
+          property: {
+            assignedAgents: { some: { agentId: session.user.id } },
+          },
+        },
+        include: {
+          property: { select: { title: true } },
+          client: { select: { name: true, email: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
+    return NextResponse.json(inspectionRequests, { status: 200 });
+  } catch (error) {
+    console.error('Error fetching inspection requests:', error);
+    return NextResponse.json({ message: 'An unexpected error occurred.' }, { status: 500 });
+  }
+}
+
 export async function POST(request) {
   const session = await getServerSession(authOptions);
 
@@ -46,7 +93,7 @@ export async function POST(request) {
       data: {
         name,
         email,
-        phone,
+        phone, // <-- Pass the phone number
         preferredDate: new Date(preferredDate), // Ensure it's a Date object
         message,
         property: {

@@ -12,7 +12,7 @@ export default function InspectionRequestForm({ propertyId }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
+    phone: '', // <-- Add phone to state
     preferredDate: '',
     message: '',
   });

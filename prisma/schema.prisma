@@ -171,7 +171,7 @@ model InspectionRequest {
   id            String   @id @default(uuid())
   name          String
   email         String
-  phone         String?
+  phone         String?  // <-- Added this field
   preferredDate DateTime
   message       String?
   status        InspectionStatus @default(PENDING)
