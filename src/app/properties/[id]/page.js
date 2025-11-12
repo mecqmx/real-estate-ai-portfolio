@@ -19,6 +19,7 @@ import 'swiper/css/thumbs';    // For thumbnail gallery
 
 // Import required modules from Swiper
 import { Navigation, Pagination, FreeMode, Thumbs } from 'swiper/modules';
+import InspectionRequestForm from '@/components/properties/InspectionRequestForm';
 
 
 export default function PropertyDetailPage() {
@@ -236,6 +237,13 @@ export default function PropertyDetailPage() {
           </button>
         </div>
       )}
+
+      {/* --- Inspection Request Form --- */}
+      {/* Show form if user is logged in and is NOT the owner of the property */}
+      {status === 'authenticated' && property && session?.user?.id !== property.ownerId && (
+        <InspectionRequestForm propertyId={property.id} />
+      )}
+
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (

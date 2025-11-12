@@ -38,10 +38,14 @@ model Property {
   landArea         String?   // Optional as per frontend
   images           PropertyImage[] // Relation to gallery images (PropertyImage model)
 
-  // --- CRÍTICO: Relación con el usuario propietario ---
-  ownerId          String // Clave foránea al usuario que posee esta propiedad
-  owner            User      @relation(fields: [ownerId], references: [id])
-  // --- FIN CRÍTICO ---
+  // --- Relation to Inspection Requests ---
+  inspectionRequests InspectionRequest[]
+
+  // ---  Relación con el usuario propietario ---
+  ownerId String // Clave foránea al usuario que posee esta propiedad
+  owner   User   @relation(fields: [ownerId], references: [id])
+  // ---  ---
+  assignedAgents AgentOnProperty[] // Relación a la tabla de unión
 
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -82,7 +86,9 @@ model User {
 
   accounts      Account[]
   sessions      Session[]
-  properties    Property[] // --- CRÍTICO: Relación inversa a Property model (propiedades creadas por este usuario) ---
+  properties         Property[] // --- CRÍTICO: Relación inversa a Property model (propiedades creadas por este usuario) ---
+  assignedProperties AgentOnProperty[] // Propiedades ASIGNADAS a este agente
+  inspectionRequests InspectionRequest[] // Requests made by this user
 }
 model Account {
   id                 String  @id @default(cuid())
@@ -132,4 +138,52 @@ model PasswordResetToken {
   updatedAt DateTime @updatedAt
 
   @@index([email]) // Index for faster lookups by email
+}
+
+// ====================================================================
+//  Tabla de Unión para la Asignación de Agentes (M:N)
+// ====================================================================
+// Este modelo establece la relación entre un Agente (User) y una Propiedad.
+// Sólo se debe usar para usuarios con Role: AGENT.
+model AgentOnProperty {
+  propertyId String
+  agentId    String
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  agent    User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+  @@id([propertyId, agentId])
+  @@map("agent_on_property")
+}
+
+// ====================================================================
+//  Modelo para Solicitudes de Inspección
+// ====================================================================
+enum InspectionStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model InspectionRequest {
+  id            String   @id @default(uuid())
+  name          String
+  email         String
+  phone         String?
+  preferredDate DateTime
+  message       String?
+  status        InspectionStatus @default(PENDING)
+
+  // Relation to the property being inspected
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  // Relation to the user (client) making the request
+  clientId     String
+  client       User     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
