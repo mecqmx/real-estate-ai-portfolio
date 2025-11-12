@@ -240,9 +240,7 @@ export default function PropertyDetailPage() {
 
       {/* --- Inspection Request Form --- */}
       {/* Show form if user is logged in and is NOT the owner of the property */}
-      {status === 'authenticated' && property && session?.user?.id !== property.ownerId && (
         <InspectionRequestForm propertyId={property.id} />
-      )}
 
 
       {/* Delete Confirmation Modal */}

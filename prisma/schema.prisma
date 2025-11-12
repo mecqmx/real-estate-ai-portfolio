@@ -181,8 +181,8 @@ model InspectionRequest {
   property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   // Relation to the user (client) making the request
-  clientId     String
-  client       User     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId     String? // Make clientId optional
+  client       User?    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

@@ -154,9 +154,18 @@ export default function AdminInspectionsPage() {
                   </td>
                   <td className="py-3 px-6 text-left">
                     <div className="flex flex-col">
-                      <span>{req.client.name}</span>
-                      <span className="text-gray-500 text-xs">{req.client.email}</span>
-                      {req.phone && <span className="text-gray-500 text-xs">Tel: {req.phone}</span>}
+                      {req.client ? (
+                        <>
+                          <span>{req.client.name}</span>
+                          <span className="text-gray-500 text-xs">{req.client.email}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{req.name} <span className="text-xs font-normal text-gray-500">(Guest)</span></span>
+                          <span className="text-gray-500 text-xs">{req.email}</span>
+                        </>
+                      )}
+                      {req.phone && <span className="text-gray-500 text-xs mt-1">Tel: {req.phone}</span>}
                     </div>
                   </td>
                   <td className="py-3 px-6 text-left">{new Date(req.preferredDate).toLocaleString()}</td>

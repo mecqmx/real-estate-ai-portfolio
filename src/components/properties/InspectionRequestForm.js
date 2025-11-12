@@ -42,13 +42,6 @@ export default function InspectionRequestForm({ propertyId }) {
     setError(null);
     setSuccess(null);
 
-    if (status !== 'authenticated') {
-      setError('You must be logged in to submit a request. Redirecting to sign in...');
-      setIsLoading(false);
-      setTimeout(() => router.push('/auth/signin'), 2000);
-      return;
-    }
-
     try {
       const response = await fetch('/api/inspections', {
         method: 'POST',
@@ -88,17 +81,17 @@ export default function InspectionRequestForm({ propertyId }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" />
+            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required maxLength="100" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" />
           </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
-            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" />
+            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required maxLength="100" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" />
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number (Optional)</label>
-                <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" />
+                <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} maxLength="30" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2" />
             </div>
             <div>
                 <label htmlFor="preferredDate" className="block text-sm font-medium text-gray-700">Preferred Date & Time</label>
@@ -107,21 +100,16 @@ export default function InspectionRequestForm({ propertyId }) {
         </div>
         <div>
           <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message (Optional)</label>
-          <textarea id="message" name="message" rows="3" value={formData.message} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></textarea>
+          <textarea id="message" name="message" rows="3" value={formData.message} onChange={handleChange} maxLength="1000" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></textarea>
         </div>
         
         {error && <p className="text-red-600 bg-red-100 p-3 rounded-md">{error}</p>}
         {success && <p className="text-green-600 bg-green-100 p-3 rounded-md">{success}</p>}
 
         <div>
-          <button type="submit" disabled={isLoading || status !== 'authenticated'} className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200">
+          <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200">
             {isLoading ? 'Sending Request...' : 'Submit Request'}
           </button>
-          {status !== 'authenticated' && (
-            <p className="text-sm text-center text-gray-600 mt-2">
-              You must be signed in to request an inspection.
-            </p>
-          )}
         </div>
       </form>
     </div>

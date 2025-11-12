@@ -56,14 +56,6 @@ export async function GET(request) {
 export async function POST(request) {
   const session = await getServerSession(authOptions);
 
-  // 1. Check if user is authenticated
-  if (!session || !session.user) {
-    return NextResponse.json(
-      { message: 'You must be logged in to request an inspection.' },
-      { status: 401 }
-    );
-  }
-
   try {
     const body = await request.json();
     const { propertyId, name, email, phone, preferredDate, message } = body;
@@ -75,6 +67,24 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    // --- NEW: Server-side format validation ---
+    const nameRegex = /^[a-zA-Z\s'-.]{2,100}$/; // Allows letters, spaces, hyphens, apostrophes, dots
+    const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/; // Simple phone number regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email regex
+
+    if (!nameRegex.test(name)) {
+      return NextResponse.json({ message: 'Invalid name format. Only letters, spaces, and hyphens are allowed.' }, { status: 400 });
+    }
+
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ message: 'Invalid email format.' }, { status: 400 });
+    }
+
+    if (phone && !phoneRegex.test(phone)) {
+      return NextResponse.json({ message: 'Invalid phone number format.' }, { status: 400 });
+    }
+    // --- End of new validation ---
 
     // 3. Check if the property exists
     const property = await prisma.property.findUnique({
@@ -99,9 +109,12 @@ export async function POST(request) {
         property: {
           connect: { id: propertyId },
         },
-        client: {
-          connect: { id: session.user.id }, // Link to the logged-in user
-        },
+        // If the user is logged in, connect the request to their account
+        ...(session?.user?.id ? {
+          client: {
+            connect: { id: session.user.id },
+          },
+        } : {}),
         // Status defaults to PENDING as per the schema
       },
     });
