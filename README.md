@@ -115,24 +115,23 @@ Make sure you have the following installed:
 
 ---
 
-## 🧠 AI Prompt Engineering
+## 🧠 AI Prompt Engineering: A/B Testing & Strategy
 
-The core of the "Property Description Assistant" lies in the quality of the prompt sent to the Gemini API. The current implementation (`src/app/api/generate-description/route.js`) uses a carefully structured prompt to ensure high-quality, consistent, and relevant outputs.
+The core of the "Property Description Assistant" is a flexible A/B testing framework that allows for dynamic switching between different prompt engineering strategies. This is managed in `src/app/api/generate-description/route.js`, which selects a prompt template based on user input from the frontend.
 
-### Prompt Strategy
+This approach demonstrates a key skill in applied AI: the ability to test, iterate, and select the best prompt for a specific task.
 
-The prompt is designed with the following principles:
+### The Prompts
 
-1.  **Role-Playing:** The prompt instructs the AI to act as a `professional real estate copywriter`, setting the context and desired tone.
-2.  **Clear Rules:** A numbered list of rules guides the AI's output, covering key aspects like:
-    *   Tailoring the message based on the operation type (`Rent` vs. `Sale`).
-    *   Incorporating location details for a local feel.
-    *   Ensuring a concise and engaging tone.
-    *   Ending with a specific call to action.
-3.  **Structured Data Input:** Property data is passed in a clean, easy-to-parse format, clearly separating it from the instructions. This includes dynamic data like `Title`, `Location`, `Price`, and `Features`.
-4.  **Output Formatting Constraint:** The prompt explicitly tells the AI to generate *only* the description text, preventing it from adding extra titles, labels, or markdown formatting.
+The project includes two distinct prompts to compare their effectiveness:
 
-This structured approach makes the AI's behavior more predictable and the output more reliable for direct use in the application's frontend.
+1.  **`Basic_Prompt.txt`**: A direct, rule-based prompt. It provides clear, simple instructions to the LLM, focusing on generating a concise and factually accurate description. This prompt is effective for standard listings where clarity is key.
+
+2.  **`Advanced_CoT_Prompt.txt`**: A more sophisticated prompt that uses an implicit **Chain-of-Thought (CoT)** methodology. Instead of just giving rules for the output, it guides the AI's internal thought process, instructing it to first identify a core narrative, select an emotional hook, and then weave a story. After iteration, this prompt now consistently produces more compelling, evocative, and marketing-oriented descriptions.
+
+### Strategic Application in Marketing
+
+This dual-prompt strategy is not just a technical demonstration; it's a practical marketing tool. By allowing agents to switch prompts, the application can instantly change the tone and focus of the generated content. This enables targeting different market segments effectively—for example, using the **Advanced** prompt for luxury listings that benefit from storytelling, and the **Basic** prompt for rental properties where speed and factual clarity are more important.
 
 ---
 
@@ -187,7 +186,9 @@ real-estate-ai-portfolio/
 │   │   │   ├── register/
 │   │   │   │   └── route.js      # Handles new user registration
 │   │   │   └── generate-description/
-│   │   │       └── route.js  # AI description generator
+│   │   │       ├── route.js      # AI description generator API
+│   │   │       ├── Basic_Prompt.txt
+│   │   │       └── Advanced_CoT_Prompt.txt
 │   │   ├── auth/                 # Authentication-related pages
 │   │   │   ├── signin/page.js
 │   │   │   └── signup/page.js

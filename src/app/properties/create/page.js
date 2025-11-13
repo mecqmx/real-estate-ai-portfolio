@@ -30,6 +30,8 @@ export default function CreatePropertyPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false); // New state for AI generation
+  const [generationInfo, setGenerationInfo] = useState(null); // State for AI feedback (cached, success, etc.)
+  const [promptType, setPromptType] = useState('basic'); // State for AI prompt type
 
   // Handle input changes for main form fields
   const handleInputChange = (e) => {
@@ -70,9 +72,11 @@ export default function CreatePropertyPage() {
   const handleGenerateDescription = async () => {
     setIsGeneratingDescription(true);
     setError(null); // Clear previous errors
+    setGenerationInfo(null); // Clear previous info messages
 
     try {
       const payload = {
+        promptType: promptType, // Pass the selected prompt type
         title: formData.title,
         price: formData.price ? parseFloat(formData.price) : null,
         beds: formData.bedrooms ? parseInt(formData.bedrooms, 10) : null,
@@ -102,17 +106,30 @@ export default function CreatePropertyPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        if (response.status === 429) {
+          throw new Error('Rate limit exceeded. Please wait a while before trying again.');
+        }
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+
+      // Handle cached response info
+      if (data.cached) {
+        setGenerationInfo('Showing a cached description. A new one can be generated every 2 minutes.');
+      } else {
+        setGenerationInfo('A new description was generated successfully!');
+      }
+
       setFormData((prevData) => ({
         ...prevData,
         description: data.description,
       }));
+
+      setTimeout(() => setGenerationInfo(null), 5000); // Clear info message after 5 seconds
     } catch (err) {
       console.error('Error generating description:', err);
-      setError('AI failed to generate a description. Please ensure the title and other key details are filled out, or try again.');
+      setError(err.message || 'AI failed to generate a description. Please ensure key details are filled out.');
     } finally {
       setIsGeneratingDescription(false);
     }
@@ -316,14 +333,41 @@ export default function CreatePropertyPage() {
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
             required
           ></textarea>
-          <button
-            type="button"
-            onClick={handleGenerateDescription}
-            disabled={isGeneratingDescription}
-            className="mt-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isGeneratingDescription ? 'Generating...' : 'Generate Description with AI'}
-          </button>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm font-medium text-gray-700">AI Description Type:</span>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setPromptType('basic')}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                    promptType === 'basic'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  Basic
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPromptType('advanced')}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                    promptType === 'advanced'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  Advanced (CoT)
+                </button>
+              </div>
+            </div>
+            <button type="button" onClick={handleGenerateDescription} disabled={isGeneratingDescription} className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              {isGeneratingDescription ? 'Generating...' : 'Generate with AI'}
+            </button>
+          </div>
+          {generationInfo && (
+            <p className="text-sm text-blue-600 mt-2">{generationInfo}</p>
+          )}
         </div>
 
         <div className="flex items-center">

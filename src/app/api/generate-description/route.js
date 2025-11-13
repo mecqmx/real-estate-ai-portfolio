@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import fs from 'fs';
+import path from 'path';
+
+/**
+ * Extend the timeout for this specific API route.
+ */
+export const maxDuration = 30; // 30 seconds
 
 /**
  * In-memory store for rate limiting and caching.
@@ -10,7 +17,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const lib = {
   RATE_LIMIT_WINDOW_MS: 60 * 60 * 1000, // 1 hour
   RATE_LIMIT_MAX: 20, // requests per window per IP
-  CACHE_TTL_MS: 5 * 60 * 1000, // 5 minutes
+  CACHE_TTL_MS: 2 * 60 * 1000, // 2 minutes
   rateMap: new Map(),
   cacheMap: new Map(),
   getIp: (headers) =>
@@ -82,48 +89,42 @@ export async function POST(req) {
     const rl = lib.rateLimit(ip);
     if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
-    const body = await req.json();
-    if (!body || !body.title) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const requestBody = await req.json();
+    const { promptType = 'basic', ...body } = requestBody;
+    if (!body || !body.title) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
 
-    const cacheKey = JSON.stringify(body);
+    // Use the full request body for the cache key to differentiate between prompt types
+    const cacheKey = JSON.stringify(requestBody);
     const cached = lib.getCache(cacheKey);
     if (cached) return NextResponse.json({ description: cached, cached: true });
 
-    // Forcing English as requested, removing language detection.
     const inferredLocale = 'en-US';
     const formattedPrice = lib.formatPrice(body.price, inferredLocale);
 
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_KEY) {
       console.warn('LLM API key not found. Using fallback description.');
-      const desc = lib.fallbackDescription({ ...body, locale: inferredLocale });
+      const desc = lib.fallbackDescription({ ...body, locale: inferredLocale, beds: body.beds, baths: body.baths, area: body.area, features: body.features });
       lib.setCache(cacheKey, desc);
       return NextResponse.json({ description: desc, fallback: true });
     }
 
-    // Simplified prompt to generate a description directly.
-    const prompt = `You are a professional real estate copywriter. Your task is to generate an engaging property description in English based on the data provided below.
+    // Determine which prompt file to use
+    const promptFileName = promptType === 'advanced' ? 'Advanced_CoT_Prompt.txt' : 'Basic_Prompt.txt';
+    const promptTemplatePath = path.join(process.cwd(), 'src', 'app', 'api', 'generate-description', promptFileName);
+    const promptTemplate = fs.readFileSync(promptTemplatePath, 'utf-8');
 
-Follow these rules:
-1. If the 'Operation' is "Rent", emphasize the benefits of renting.
-2. If the 'Operation' is "Sale", emphasize the value of buying.
-3. If a 'Location' is provided, naturally weave in its benefits and use a communication style that feels local and culturally aware.
-4. Mention the 'Type' of property naturally within the description.
-5. Keep the description concise but engaging.
-6. End with a clear call to action, inviting the reader to book an inspection.
-7. VERY IMPORTANT: Generate only the description text. Do not include any extra formatting, labels, titles, or JSON.
-
----
-PROPERTY DATA:
-Title: ${body.title}
-Operation: ${body.operation || 'Sale'}
-Location: ${body.location}
-Type: ${body.type}
-Price: ${formattedPrice}
-Details: ${body.beds || 'N/A'} beds, ${body.baths || 'N/A'} baths, ${body.area || 'N/A'} sqm.
-Features: ${(body.features || []).join(', ') || 'None'}
----
-DESCRIPTION:`;
+    // Securely interpolate variables into the chosen prompt template
+    const interpolate = (template, variables) => {
+      return template.replace(/\${(.*?)}/g, (_, key) => {
+        // Access nested properties like 'body.title'
+        const value = key.split('.').reduce((obj, k) => (obj || {})[k], variables);
+        return value !== undefined ? value : '';
+      });
+    };
+    const prompt = interpolate(promptTemplate, { body, formattedPrice });
 
     const genAI = new GoogleGenerativeAI(GEMINI_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -140,7 +141,7 @@ DESCRIPTION:`;
     const description = content.replace(/["*]/g, '').trim();
 
     if (!description) {
-      const desc = lib.fallbackDescription({ ...body, locale: inferredLocale });
+      const desc = lib.fallbackDescription({ ...body, locale: inferredLocale, beds: body.beds, baths: body.baths, area: body.area, features: body.features });
       lib.setCache(cacheKey, desc);
       return NextResponse.json({ description: desc, fallback: true });
     }
