@@ -32,6 +32,8 @@ export default function CreatePropertyPage() {
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false); // New state for AI generation
   const [generationInfo, setGenerationInfo] = useState(null); // State for AI feedback (cached, success, etc.)
   const [promptType, setPromptType] = useState('basic'); // State for AI prompt type
+  const [uploading, setUploading] = useState(false); // State for image upload
+  const [uploadError, setUploadError] = useState(null); // State for image upload error
 
   // Handle input changes for main form fields
   const handleInputChange = (e) => {
@@ -42,14 +44,47 @@ export default function CreatePropertyPage() {
     }));
   };
 
-  // Handle changes for gallery image URLs
+  const handleFileUpload = async (file, index) => {
+    setUploading(true);
+    setUploadError(null);
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Image upload failed');
+      }
+
+      const data = await response.json();
+      const newUrl = data.url;
+
+      if (index === 'main') {
+        setFormData(prev => ({ ...prev, image: newUrl, name: 'image' }));
+      } else {
+        const newImages = [...formData.images];
+        newImages[index] = { url: newUrl };
+        setFormData(prev => ({ ...prev, images: newImages }));
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      setUploadError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleImageChange = (index, e) => {
-    const newImages = [...formData.images];
-    newImages[index].url = e.target.value;
-    setFormData((prevData) => ({
-      ...prevData,
-      images: newImages,
-    }));
+    const file = e.target.files[0];
+    if (file) {
+      handleFileUpload(file, index);
+    }
   };
 
   // Add a new empty image URL field
@@ -252,17 +287,16 @@ export default function CreatePropertyPage() {
         </div>
 
         <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700">Main Image URL:</label>
+          <label htmlFor="image" className="block text-sm font-medium text-gray-700">Main Image:</label>
           <input
-            type="url" // Use type="url" for image URLs
+            type="file"
             id="image"
             name="image"
-            value={formData.image}
-            onChange={handleInputChange}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g., https://example.com/main-image.jpg"
+            onChange={(e) => handleImageChange('main', e)}
+            accept="image/*"
+            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
+          {formData.image && <img src={formData.image} alt="Main preview" className="mt-2 h-32 w-auto rounded-md" />}
         </div>
 
         <div>
@@ -412,13 +446,15 @@ export default function CreatePropertyPage() {
           <h2 className="text-xl font-bold text-gray-800 mb-4">Gallery Images</h2>
           {formData.images.map((image, index) => (
             <div key={index} className="flex items-center space-x-2 mb-3">
-              <input
-                type="url"
-                value={image.url}
-                onChange={(e) => handleImageChange(index, e)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder={`Gallery Image URL ${index + 1}`}
-              />
+              <div className="flex-grow">
+                <input
+                  type="file"
+                  onChange={(e) => handleImageChange(index, e)}
+                  accept="image/*"
+                  className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                {image.url && <img src={image.url} alt={`Gallery preview ${index + 1}`} className="mt-2 h-24 w-auto rounded-md" />}
+              </div>
               {formData.images.length > 1 && (
                 <button
                   type="button"
@@ -441,13 +477,15 @@ export default function CreatePropertyPage() {
 
         {/* Submission Feedback */}
         {isLoading && <p className="text-blue-600">Creating property...</p>}
+        {uploading && <p className="text-blue-600">Uploading image...</p>}
+        {uploadError && <p className="text-red-600">Upload Error: {uploadError}</p>}
         {error && <p className="text-red-600">Error: {error}</p>}
         {success && <p className="text-green-600">Property created successfully!</p>}
 
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || uploading}
           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Creating...' : 'Create Property'}
