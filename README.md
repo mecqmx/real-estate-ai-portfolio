@@ -2,13 +2,14 @@
 
 ---
 
-## 🚀 Project Overview
+> **Note:** The MVP of this project is functional but is currently on hold. Significant updates and improvements are needed before it is ready for deployment.
+
+---
+
 ## 🚀 Project Vision & Overview
 
 This project is a modern real estate web application, designed to showcase properties and optimize key processes through the integration of **Artificial Intelligence Agents**. Built with **Next.js** and styled with **Tailwind CSS**, it serves as a central component of my professional portfolio,
 highlighting my skills in **full-stack development**. This includes modern frontend implementation, robust backend architecture with **relational database management**, secure authentication, data validation, and the practical application of **AI for real-world solutions**.
-
-The core AI feature is a **Property Description Assistant**, which leverages a third-party Large Language Model (LLM) via an API to automatically generate compelling and optimized property descriptions. This demonstrates a practical, scalable approach to AI integration, moving from an initial experimental phase with a custom-trained LSTM model to a more robust, production-ready solution.
 The core AI feature, a **Property Description Assistant**, is now ready and leverages the **Gemini API** (a Large Language Model) to automatically generate compelling and optimized property descriptions. This demonstrates a practical, scalable, and production-ready AI integration, showcasing a robust solution beyond initial experimental phases.
 
 ### ✨ Key Features (Ready)
@@ -16,7 +17,6 @@ The core AI feature, a **Property Description Assistant**, is now ready and leve
 * **Interactive Property Catalog:** Explore properties with a clean and responsive interface.
 * **Advanced Search Filters:** Filter properties by price, type, number of bedrooms, and bathrooms for efficient searching.
 * **AI-Powered Content Generation:** Integration of AI agents to automate property description creation, ensuring engaging and optimized content.
-* **Intelligent Form Validation (Coming Soon):** Leveraging AI to improve data accuracy and efficiency in form validation.
 * **Modern & Responsive Design:** Intuitive user interface built with Tailwind CSS, compatible across various devices.
 *   **Comprehensive User Authentication:** Secure Sign In/Up functionality with email verification and distinct user roles (Agent, Client, Admin).
 *   **Interactive Property Catalog:** A clean, responsive interface for exploring properties, complete with CRUD (Create, Read, Update, Delete) capabilities for agents.
@@ -51,13 +51,11 @@ To build a more robust platform for real estate workflows, the following feature
 * **Frontend:**
     * [**Next.js**](https://nextjs.org/) (React Framework for production)
     * [**React**](https://react.dev/) (UI Library)
-    * [**Tailwind CSS**](https://tailwindcss.com/) (Utility-first CSS Framework)
-* **Backend / Database (to be defined/integrated):**
-    * [**Firebase / Supabase**](https://firebase.google.com/) (for user authentication and document/data management)
+    * [**Tailwind CSS**](https://tailwindcss.com/) (Utility-first CSS Framework) 
 * **Backend / Database:**
     * [**NextAuth.js**](https://next-auth.js.org/) (Authentication for Next.js)
     * [**Prisma**](https://www.prisma.io/) (Next-generation ORM for Node.js and TypeScript)
-    * _(Database to be specified, e.g., PostgreSQL, MySQL)_
+    * _(Database: PostgreSQL via Neon)_
 * **Artificial Intelligence:**
     * [**Gemini API**](https://ai.google.dev/docs) (for text generation and intelligent validation)
 * **Development & Deployment Tools:**
@@ -82,14 +80,11 @@ Make sure you have the following installed:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/your_username/your_repository_name.git](https://github.com/your_username/your_repository_name.git)
     git clone https://github.com/punkymx/real-estate-ai-portfolio.git
     ```
-    (Remember to replace `your_username` with your GitHub username and `your_repository_name` with your actual repository name!)
 
 2.  **Navigate to the project directory:**
     ```bash
-    cd your_repository_name # e.g., cd real-estate-ai-portfolio
     cd real-estate-ai-portfolio
     ```
 
@@ -105,10 +100,11 @@ Make sure you have the following installed:
 
     ```
     # .env.local
-    DATABASE_URL="your_database_connection_string"
-    NEXT_PUBLIC_GEMINI_API_KEY="your_gemini_api_key_here"
+    DATABASE_URL="your_postgresql_connection_string"
+    GEMINI_API_KEY="your_gemini_api_key_here"
+    NEXTAUTH_URL="http://localhost:3000"
+    NEXTAUTH_SECRET="your_nextauth_secret"
     ```
-    *(Ensure this file is not committed to Git. Next.js's `.gitignore` usually excludes it by default.)*
     *(This file is excluded from Git by default in `.gitignore`.)*
 
 ### **Run the Development Server**
